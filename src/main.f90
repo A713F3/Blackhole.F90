@@ -5,6 +5,7 @@ program main
     use :: sdl2
     use :: circle
     use :: blackhole_mod
+    use :: photon_mod
     implicit none
 
     integer, parameter :: SCREEN_WIDTH  = 1200
@@ -16,7 +17,10 @@ program main
     integer         :: rc
     logical         :: is_running
 
-    type(blackhole_t) :: bh
+    type(blackhole_t) :: blackhole
+    type(photon_t), dimension(40) :: photons
+
+    integer :: p
 
     ! Initialise SDL.
     if (sdl_init(SDL_INIT_VIDEO) < 0) then
@@ -41,7 +45,12 @@ program main
     renderer = sdl_create_renderer(window, -1, 0)
 
     ! Define blackhole.
-    bh = blackhole_t(x=600, y=350, mass=3500.0)
+    blackhole = blackhole_t(x=600, y=450, mass=3500.0)
+
+    ! Initialize photons.
+    do p = 1, size(photons)
+        photons(p) = photon_t(x=1100, y=450 - p*10, velo=(/ -1, 0 /) )
+    end do
 
     ! Event loop.
     is_running = .true.
@@ -64,7 +73,13 @@ program main
         rc = sdl_render_clear(renderer)
 
 
-        rc = sdl_render_draw_blackhole(renderer, bh)
+        rc = sdl_render_draw_blackhole(renderer, blackhole)
+
+        do p = 1, size(photons)
+            rc = sdl_render_draw_photon(renderer, photons(p))
+            call update_photon(photons(p))
+            call attract(blackhole, photons(p))
+        end do
 
         ! Render to screen and wait 20 ms.
         call sdl_render_present(renderer)
