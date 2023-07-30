@@ -4,18 +4,19 @@ program main
     use, intrinsic :: iso_fortran_env, only: stdout => output_unit, stderr => error_unit
     use :: sdl2
     use :: circle
+    use :: blackhole_mod
     implicit none
 
-    integer, parameter :: SCREEN_WIDTH  = 700
-    integer, parameter :: SCREEN_HEIGHT = 500
+    integer, parameter :: SCREEN_WIDTH  = 1200
+    integer, parameter :: SCREEN_HEIGHT = 700
 
     type(c_ptr)     :: window
     type(c_ptr)     :: renderer
     type(sdl_event) :: event
-    type(sdl_rect)  :: rect
-    type(sdl_circle):: circ
     integer         :: rc
     logical         :: is_running
+
+    type(blackhole_t) :: bh
 
     ! Initialise SDL.
     if (sdl_init(SDL_INIT_VIDEO) < 0) then
@@ -39,9 +40,8 @@ program main
     ! Create the renderer.
     renderer = sdl_create_renderer(window, -1, 0)
 
-    ! Set position and size of the rectangle.
-    rect = sdl_rect(50, 50, 250, 250)
-    circ = sdl_circle(100, 100, 30)
+    ! Define blackhole.
+    bh = blackhole_t(x=600, y=350, mass=3500.0)
 
     ! Event loop.
     is_running = .true.
@@ -55,29 +55,16 @@ program main
             end select
         end do
 
-        ! Fill screen black.
+        ! Fill screen background.
         rc = sdl_set_render_draw_color(renderer, &
-                                    uint8(0), &
-                                    uint8(0), &
-                                    uint8(0), &
+                                    uint8(51), &
+                                    uint8(51), &
+                                    uint8(51), &
                                     uint8(SDL_ALPHA_OPAQUE))
         rc = sdl_render_clear(renderer)
 
-        ! Fill the rectangle.
-        rc = sdl_set_render_draw_color(renderer, &
-                                    uint8(255), &
-                                    uint8(0), &
-                                    uint8(0), &
-                                    uint8(SDL_ALPHA_OPAQUE))
-        rc = sdl_render_fill_rect(renderer, rect)
 
-
-        rc = sdl_set_render_draw_color(renderer, &
-                                    uint8(0), &
-                                    uint8(0), &
-                                    uint8(255), &
-                                    uint8(SDL_ALPHA_OPAQUE))
-        rc = sdl_render_fill_circle(renderer, circ)
+        rc = sdl_render_draw_blackhole(renderer, bh)
 
         ! Render to screen and wait 20 ms.
         call sdl_render_present(renderer)
