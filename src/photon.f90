@@ -4,12 +4,13 @@ module photon_mod
     implicit none
 
     type :: photon_t
+        logical :: active
         integer :: x, y
         real, dimension(2) :: velo
     end type
 
     interface photon_t
-        procedure :: new_photon
+        module procedure :: new_photon
     end interface
 
 contains
@@ -22,13 +23,16 @@ contains
         new_photon%x = x
         new_photon%y = y
         new_photon%velo = velo
+        new_photon%active = .true.
     end function
 
     subroutine update_photon(photon)
         type(photon_t) :: photon
 
-        photon%x = int(photon%x + photon%velo(1))
-        photon%y = int(photon%y + photon%velo(2))
+        if (photon%active) then
+            photon%x = int(photon%x + photon%velo(1))
+            photon%y = int(photon%y + photon%velo(2))
+        end if
     end subroutine update_photon
 
     function sdl_render_draw_photon(renderer, photon)
@@ -39,17 +43,18 @@ contains
         integer :: rc
         type(sdl_circle) :: p
 
-        p = sdl_circle(photon%x, photon%y, 3)
+        if (photon%active) then
+            p = sdl_circle(photon%x, photon%y, 3)
 
-        rc = sdl_set_render_draw_color(renderer, &
-                                    uint8(255), &
-                                    uint8(233), &
-                                    uint8(0), &
-                                    uint8(SDL_ALPHA_OPAQUE))
-        rc = sdl_render_fill_circle(renderer, p)
+            rc = sdl_set_render_draw_color(renderer, &
+                                        uint8(255),  &
+                                        uint8(233),  &
+                                        uint8(0),    &
+                                        uint8(SDL_ALPHA_OPAQUE))
+            rc = sdl_render_fill_circle(renderer, p)
+        end if
 
         sdl_render_draw_photon = rc
-
     end function sdl_render_draw_photon
 
 end module photon_mod

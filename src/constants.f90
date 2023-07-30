@@ -1,7 +1,7 @@
 module constants
     implicit none
 
-    real :: G = 7
+    real :: G = 3.54
     real :: C = 30
 
 end module constants

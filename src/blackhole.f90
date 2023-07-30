@@ -33,7 +33,7 @@ contains
         type(blackhole_t), intent(in) :: blackhole
         integer(kind=c_int)      :: sdl_render_draw_blackhole
 
-        integer :: rc
+        integer :: rc, end
 
         type(sdl_circle) :: bh_circle, rs_circle, outer_rs
 
@@ -66,6 +66,14 @@ contains
                                     uint8(SDL_ALPHA_OPAQUE))
         rc = sdl_render_fill_circle(renderer, bh_circle)
 
+        ! Draw escape line.
+        end = int(blackhole%y - blackhole%rs*2.6)
+        rc = sdl_set_render_draw_color(renderer, &
+                                    uint8(150), &
+                                    uint8(150), &
+                                    uint8(150), &
+                                    uint8(SDL_ALPHA_OPAQUE))
+        rc = sdl_render_draw_line(renderer, 1200, end, 0, end)
 
         sdl_render_draw_blackhole = rc
 
@@ -95,5 +103,23 @@ contains
         photon%velo = new_velo
 
     end subroutine attract
+
+    subroutine swallow(blackhole, photon)
+        type(blackhole_t) :: blackhole
+        type(photon_t) :: photon
+
+        integer :: dx, dy
+        real :: d
+
+        dx = blackhole%x - photon%x
+        dy = blackhole%y - photon%y
+
+        d = (dx*dx + dy*dy) ** 0.5
+
+        if (d .le. blackhole%rs) then
+            photon%active = .false.
+        end if
+
+    end subroutine swallow
 
 end module blackhole_mod

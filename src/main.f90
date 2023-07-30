@@ -45,11 +45,11 @@ program main
     renderer = sdl_create_renderer(window, -1, 0)
 
     ! Define blackhole.
-    blackhole = blackhole_t(x=600, y=450, mass=3500.0)
+    blackhole = blackhole_t(x=600, y=450, mass=6500.0)
 
     ! Initialize photons.
     do p = 1, size(photons)
-        photons(p) = photon_t(x=1100, y=450 - p*10, velo=(/ -1, 0 /) )
+        photons(p) = photon_t(x=1100, y=450 - p*10, velo=(/ -C * 0.1, 0.0 /), active=.true. )
     end do
 
     ! Event loop.
@@ -79,9 +79,10 @@ program main
             rc = sdl_render_draw_photon(renderer, photons(p))
             call update_photon(photons(p))
             call attract(blackhole, photons(p))
+            call swallow(blackhole, photons(p))
         end do
 
-        ! Render to screen and wait 20 ms.
+        ! Render to screen.
         call sdl_render_present(renderer)
         call sdl_delay(20)
     end do
