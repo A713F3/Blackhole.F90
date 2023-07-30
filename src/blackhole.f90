@@ -1,6 +1,7 @@
 module blackhole_mod
     use :: circle
     use :: constants
+    use :: photon_mod
     implicit none
 
     type :: blackhole_t
@@ -38,7 +39,7 @@ contains
 
         bh_circle = sdl_circle(blackhole%x, blackhole%y, int(blackhole%rs))
         rs_circle = sdl_circle(blackhole%x, blackhole%y, int(blackhole%rs) * 3)
-        outer_rs  = sdl_circle(blackhole%x, blackhole%y, int(blackhole%rs / 2.0) + int(blackhole%rs) * 3)
+        outer_rs  = sdl_circle(blackhole%x, blackhole%y, int(blackhole%rs) + int(blackhole%rs) * 3)
 
         
         ! Draw outer accretion disk
@@ -69,5 +70,30 @@ contains
         sdl_render_draw_blackhole = rc
 
     end function
+
+    subroutine attract(blackhole, photon)
+        type(blackhole_t) :: blackhole
+        type(photon_t) :: photon
+        
+        integer :: dx, dy
+        real :: cosa, sina, u
+        real :: f
+        real, dimension(2) :: new_velo
+
+        dx = blackhole%x - photon%x
+        dy = blackhole%y - photon%y
+        u = (dx*dx + dy*dy) ** 0.5
+
+        cosa = dx / u
+        sina = dy / u
+
+        f = G * blackhole%mass / (u*u)
+
+        new_velo(1) = photon%velo(1) + (cosa * f)
+        new_velo(2) = photon%velo(2) + (sina * f)
+
+        photon%velo = new_velo
+
+    end subroutine attract
 
 end module blackhole_mod
